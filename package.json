@@ -1,0 +1,14 @@
+{
+	"name": "monitoverse",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "concurrently \"pnpm run start:frontend\" \"pnpm run start:backend\"",
+		"start:frontend": "cd front && pnpm run dev",
+		"start:backend": "cd back && go run main.go"
+	},
+	"dependencies": {
+		"concurrently": "^9.1.0"
+	}
+}
