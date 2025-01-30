@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/gin-contrib/cors"
 	database "github.com/lanayr/goServer/main/Database"
 	"github.com/lanayr/goServer/main/models"
 	"github.com/lanayr/goServer/main/repositories"
@@ -28,6 +29,15 @@ func main() {
 	userService := services.NewUserService(userRepo)
 
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"http://localhost:5173", "http://127.0.0.1:3000"}, // Indiquez les domaines autorisés
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+    }))
+	
 
 	routes.SetupRoutes(router, userService)
 
