@@ -1,14 +1,6 @@
 {
-	"name": "monitoverse",
-	"private": true,
-	"version": "0.0.0",
-	"type": "module",
-	"scripts": {
-		"dev": "concurrently \"pnpm run start:frontend\" \"pnpm run start:backend\"",
-		"start:frontend": "cd front && pnpm run dev",
-		"start:backend": "cd back && go run main.go"
-	},
-	"dependencies": {
-		"concurrently": "^9.1.0"
-	}
+  "dependencies": {
+    "@chakra-ui/react": "^3.8.1",
+    "@emotion/react": "^11.14.0"
+  }
 }
