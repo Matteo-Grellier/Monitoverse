@@ -18,7 +18,7 @@ type KeyRequestBody struct {
 
 func RegisterTOTPRoutes(r *gin.Engine) {
 	r.GET("/totp/generate/:TotpEmail", GenerateTotp)
-	r.GET("/totp/get")
+	r.POST("/totp/get", TestKey)
 	r.GET("/totp/resetToken")
 }
 
@@ -52,11 +52,13 @@ func TestKey(c *gin.Context) {
 	}
 
 	userCode := requestBody.Key // Par exemple, code saisi par l’utilisateur
+	fmt.Println("Code saisi par l’utilisateur :", userCode)
 	valid := totp.Validate(userCode, test.Secret())
 	if valid {
 		fmt.Println("Code valide!")
-		c.IndentedJSON(http.StatusOK, "")
+		c.IndentedJSON(http.StatusOK, gin.H{"codeStatus": "Code Valide !"})
 	} else {
+		c.IndentedJSON(http.StatusOK, gin.H{"codeStatus": "Code Invalide !"})
 		fmt.Println("Code invalide!")
 	}
 }

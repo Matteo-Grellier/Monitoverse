@@ -1,9 +1,14 @@
 package handlers
 
 import (
+	"bufio"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,59 +24,186 @@ var upgrader = websocket.Upgrader{
 }
 
 func RegisterMonitoringRoutes(r *gin.Engine, userService services.UserService) {
-	// Route GET pour la température
-	r.GET("/monitoring/temp", GetTemp)
 
-	// Route GET pour le WebSocket
-	r.GET("/monitoring/ws", func(c *gin.Context) {
-		wsHandler(c, userService)
-	})
+	r.GET("/monitoring/cpu", MakeWebSocketHandler(500*time.Millisecond, func() (any, error) {
+		cpuUsage, err := getCPUUsage()
+		if err != nil {
+			return nil, err
+		}
+		return cpuUsage, nil
+	}))
+
+	r.GET("/monitoring/memory", MakeWebSocketHandler(500*time.Millisecond, func() (interface{}, error) {
+		usage, err := getMemoryUsage()
+		if err != nil {
+			return nil, err
+		}
+		return usage, nil
+	}))
 }
 
-// wsHandler : gère la connexion WebSocket
-func wsHandler(c *gin.Context, userService services.UserService) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+type cpuTimes struct {
+	user    uint64
+	nice    uint64
+	system  uint64
+	idle    uint64
+	iowait  uint64
+	irq     uint64
+	softirq uint64
+	steal   uint64
+	// total = sum of all above
+	total uint64
+}
+
+func getCPUUsage() (float64, error) {
+	c1, err := readCPUSnapshot()
 	if err != nil {
-		log.Println("Erreur d'upgrade:", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return 0.0, err
 	}
-	defer conn.Close()
 
-	// Envoi périodique de la liste des users
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
+	c2, err := readCPUSnapshot()
+	if err != nil {
+		return 0.0, err
+	}
 
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				users, err := userService.GetAllUsers()
-				if err != nil {
-					log.Println("Erreur récupération users:", err)
-					continue
-				}
+	idleDelta := float64((c2.idle + c2.iowait) - (c1.idle + c1.iowait))
+	totalDelta := float64(c2.total - c1.total)
 
-				userData, _ := json.Marshal(users)
-				if err := conn.WriteMessage(websocket.TextMessage, userData); err != nil {
-					log.Println("Erreur envoi message:", err)
+	if totalDelta == 0 {
+		return 0.0, nil
+	}
+
+	usage := (1.0 - idleDelta/totalDelta) * 100.0
+	return usage, nil
+}
+
+// readCPUSnapshot parses the first "cpu " line in /proc/stat to extract CPU counters
+func readCPUSnapshot() (*cpuTimes, error) {
+	data, err := os.ReadFile("/proc/stat")
+	if err != nil {
+		return nil, err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "cpu ") {
+			fields := strings.Fields(line)
+			if len(fields) < 8 {
+				break
+			}
+
+			user, _ := strconv.ParseUint(fields[1], 10, 64)
+			nice, _ := strconv.ParseUint(fields[2], 10, 64)
+			system, _ := strconv.ParseUint(fields[3], 10, 64)
+			idle, _ := strconv.ParseUint(fields[4], 10, 64)
+			iowait, _ := strconv.ParseUint(fields[5], 10, 64)
+			irq, _ := strconv.ParseUint(fields[6], 10, 64)
+			softirq, _ := strconv.ParseUint(fields[7], 10, 64)
+
+			var steal uint64
+			if len(fields) > 8 {
+				steal, _ = strconv.ParseUint(fields[8], 10, 64)
+			}
+
+			total := user + nice + system + idle + iowait + irq + softirq + steal
+
+			return &cpuTimes{
+				user:    user,
+				nice:    nice,
+				system:  system,
+				idle:    idle,
+				iowait:  iowait,
+				irq:     irq,
+				softirq: softirq,
+				steal:   steal,
+				total:   total,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find 'cpu ' line in /proc/stat")
+}
+
+func getMemoryUsage() (float64, error) {
+	file, err := os.Open("/proc/meminfo")
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	var totalMem, availableMem uint64
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.HasPrefix(line, "MemTotal:") {
+			fields := strings.Fields(line)
+			totalMem, _ = strconv.ParseUint(fields[1], 10, 64)
+		} else if strings.HasPrefix(line, "MemAvailable:") {
+			fields := strings.Fields(line)
+			availableMem, _ = strconv.ParseUint(fields[1], 10, 64)
+		}
+	}
+
+	if totalMem == 0 {
+		return 0, fmt.Errorf("could not find MemTotal in /proc/meminfo")
+	}
+	if availableMem == 0 {
+	}
+
+	used := totalMem - availableMem
+	usage := (float64(used) / float64(totalMem)) * 100.0
+
+	return usage, nil
+}
+
+type dataFunc func() (any, error)
+
+func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFunc {
+	var upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool { return true },
+	}
+	return func(c *gin.Context) {
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			log.Println("Erreur d'upgrade:", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		defer conn.Close()
+
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		done := make(chan struct{})
+
+		go func() {
+			for {
+				select {
+				case <-ticker.C:
+					value, err := dataFn()
+					if err != nil {
+						log.Println("Erreur récupération data:", err)
+						continue
+					}
+					msg, _ := json.Marshal(value)
+					if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+						log.Println("Erreur envoi message:", err)
+						return
+					}
+
+				case <-done:
 					return
 				}
 			}
-		}
-	}()
+		}()
 
-	// Lire les messages du client (optionnel)
-	for {
-		_, _, err := conn.ReadMessage()
-		if err != nil {
-			log.Println("Client déconnecté:", err)
-			break
+		for {
+			if _, _, err := conn.ReadMessage(); err != nil {
+				log.Println("Client déconnecté:", err)
+				close(done)
+				break
+			}
 		}
 	}
-}
-
-// GetTemp : exemple de récupération de la température (fictive ici)
-func GetTemp(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{"temp": "20°"})
 }
