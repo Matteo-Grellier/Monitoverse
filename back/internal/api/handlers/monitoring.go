@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/lanayr/goServer/main/internal/services"
+	"golang.org/x/sys/unix"
 )
 
 // Upgrader pour passer HTTP -> WebSocket
@@ -25,7 +26,7 @@ var upgrader = websocket.Upgrader{
 
 func RegisterMonitoringRoutes(r *gin.Engine, userService services.UserService) {
 
-	r.GET("/monitoring/cpu", MakeWebSocketHandler(500*time.Millisecond, func() (any, error) {
+	r.GET("/monitoring/cpu", MakeWebSocketHandler(1000*time.Millisecond, func() (any, error) {
 		cpuUsage, err := getCPUUsage()
 		if err != nil {
 			return nil, err
@@ -33,128 +34,21 @@ func RegisterMonitoringRoutes(r *gin.Engine, userService services.UserService) {
 		return cpuUsage, nil
 	}))
 
-	r.GET("/monitoring/memory", MakeWebSocketHandler(500*time.Millisecond, func() (interface{}, error) {
+	r.GET("/monitoring/memory", MakeWebSocketHandler(1000*time.Millisecond, func() (interface{}, error) {
 		usage, err := getMemoryUsage()
 		if err != nil {
 			return nil, err
 		}
 		return usage, nil
 	}))
-}
 
-type cpuTimes struct {
-	user    uint64
-	nice    uint64
-	system  uint64
-	idle    uint64
-	iowait  uint64
-	irq     uint64
-	softirq uint64
-	steal   uint64
-	// total = sum of all above
-	total uint64
-}
-
-func getCPUUsage() (float64, error) {
-	c1, err := readCPUSnapshot()
-	if err != nil {
-		return 0.0, err
-	}
-
-	c2, err := readCPUSnapshot()
-	if err != nil {
-		return 0.0, err
-	}
-
-	idleDelta := float64((c2.idle + c2.iowait) - (c1.idle + c1.iowait))
-	totalDelta := float64(c2.total - c1.total)
-
-	if totalDelta == 0 {
-		return 0.0, nil
-	}
-
-	usage := (1.0 - idleDelta/totalDelta) * 100.0
-	return usage, nil
-}
-
-// readCPUSnapshot parses the first "cpu " line in /proc/stat to extract CPU counters
-func readCPUSnapshot() (*cpuTimes, error) {
-	data, err := os.ReadFile("/proc/stat")
-	if err != nil {
-		return nil, err
-	}
-
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(line, "cpu ") {
-			fields := strings.Fields(line)
-			if len(fields) < 8 {
-				break
-			}
-
-			user, _ := strconv.ParseUint(fields[1], 10, 64)
-			nice, _ := strconv.ParseUint(fields[2], 10, 64)
-			system, _ := strconv.ParseUint(fields[3], 10, 64)
-			idle, _ := strconv.ParseUint(fields[4], 10, 64)
-			iowait, _ := strconv.ParseUint(fields[5], 10, 64)
-			irq, _ := strconv.ParseUint(fields[6], 10, 64)
-			softirq, _ := strconv.ParseUint(fields[7], 10, 64)
-
-			var steal uint64
-			if len(fields) > 8 {
-				steal, _ = strconv.ParseUint(fields[8], 10, 64)
-			}
-
-			total := user + nice + system + idle + iowait + irq + softirq + steal
-
-			return &cpuTimes{
-				user:    user,
-				nice:    nice,
-				system:  system,
-				idle:    idle,
-				iowait:  iowait,
-				irq:     irq,
-				softirq: softirq,
-				steal:   steal,
-				total:   total,
-			}, nil
+	r.GET("/monitoring/disk", MakeWebSocketHandler(10000*time.Millisecond, func() (interface{}, error) {
+		usage, err := getDiskUsage()
+		if err != nil {
+			return nil, err
 		}
-	}
-	return nil, fmt.Errorf("could not find 'cpu ' line in /proc/stat")
-}
-
-func getMemoryUsage() (float64, error) {
-	file, err := os.Open("/proc/meminfo")
-	if err != nil {
-		return 0, err
-	}
-	defer file.Close()
-
-	var totalMem, availableMem uint64
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if strings.HasPrefix(line, "MemTotal:") {
-			fields := strings.Fields(line)
-			totalMem, _ = strconv.ParseUint(fields[1], 10, 64)
-		} else if strings.HasPrefix(line, "MemAvailable:") {
-			fields := strings.Fields(line)
-			availableMem, _ = strconv.ParseUint(fields[1], 10, 64)
-		}
-	}
-
-	if totalMem == 0 {
-		return 0, fmt.Errorf("could not find MemTotal in /proc/meminfo")
-	}
-	if availableMem == 0 {
-	}
-
-	used := totalMem - availableMem
-	usage := (float64(used) / float64(totalMem)) * 100.0
-
-	return usage, nil
+		return usage, nil
+	}))
 }
 
 type dataFunc func() (any, error)
@@ -206,4 +100,160 @@ func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFu
 			}
 		}
 	}
+}
+
+func getDiskUsage() (map[string]float64, error) {
+	usageMap := make(map[string]float64)
+
+	// Calculate usage on "/"
+	rootUsage, err := usageFor("/")
+	if err != nil {
+		return nil, fmt.Errorf("disk usage error for '/': %v", err)
+	}
+	usageMap["/"] = rootUsage
+
+	// Calculate usage on "/home"
+	homeUsage, err := usageFor("/home")
+	if err != nil {
+		return nil, fmt.Errorf("disk usage error for '/home': %v", err)
+	}
+	usageMap["/home"] = homeUsage
+
+	return usageMap, nil
+}
+
+// usageFor calls unix.Statfs on the provided path, calculates the percentage
+// of used blocks relative to total blocks, and returns it as a float64.
+func usageFor(path string) (float64, error) {
+	var stat unix.Statfs_t
+	if err := unix.Statfs(path, &stat); err != nil {
+		return 0, err
+	}
+
+	total := stat.Blocks * uint64(stat.Bsize)
+	free := stat.Bfree * uint64(stat.Bsize)
+	used := total - free
+
+	if total == 0 {
+		return 0, fmt.Errorf("total blocks are zero on path: %s", path)
+	}
+
+	usagePercent := float64(used) / float64(total) * 100.0
+	return usagePercent, nil
+}
+
+type cpuTimes struct {
+	user    uint64
+	nice    uint64
+	system  uint64
+	idle    uint64
+	iowait  uint64
+	irq     uint64
+	softirq uint64
+	steal   uint64
+	// total = sum of all above
+	total uint64
+}
+
+func getCPUUsage() (float64, error) {
+	c1, err := readCPUSnapshot()
+	if err != nil {
+		return 0.0, err
+	}
+
+	time.Sleep(100 * time.Millisecond)
+
+	c2, err := readCPUSnapshot()
+	if err != nil {
+		return 0.0, err
+	}
+
+	idleDelta := float64((c2.idle + c2.iowait) - (c1.idle + c1.iowait))
+	totalDelta := float64(c2.total - c1.total)
+
+	if totalDelta == 0 {
+		return 0.0, nil
+	}
+
+	usage := (1.0 - idleDelta/totalDelta) * 100.0
+	return usage, nil
+}
+
+// readCPUSnapshot parses the first "cpu " line in /proc/stat to extract CPU counters
+func readCPUSnapshot() (*cpuTimes, error) {
+	data, err := os.ReadFile("/proc/stat")
+	if err != nil {
+		return nil, err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "cpu ") {
+			fields := strings.Fields(line)
+			if len(fields) < 8 {
+				break
+			}
+
+			user, _ := strconv.ParseUint(fields[1], 10, 64)
+			nice, _ := strconv.ParseUint(fields[2], 10, 64)
+			system, _ := strconv.ParseUint(fields[3], 10, 64)
+			idle, _ := strconv.ParseUint(fields[4], 10, 64)
+			iowait, _ := strconv.ParseUint(fields[5], 10, 64)
+			irq, _ := strconv.ParseUint(fields[6], 10, 64)
+			softirq, _ := strconv.ParseUint(fields[7], 10, 64)
+
+			var steal uint64
+			if len(fields) > 8 {
+				steal, _ = strconv.ParseUint(fields[8], 10, 64)
+			}
+
+			total := user + nice + system + idle + iowait + irq + softirq + steal
+			return &cpuTimes{
+				user:    user,
+				nice:    nice,
+				system:  system,
+				idle:    idle,
+				iowait:  iowait,
+				irq:     irq,
+				softirq: softirq,
+				steal:   steal,
+				total:   total,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("could not find 'cpu ' line in /proc/stat")
+}
+
+func getMemoryUsage() (float64, error) {
+	file, err := os.Open("/proc/meminfo")
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	var totalMem, availableMem uint64
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.HasPrefix(line, "MemTotal:") {
+			fields := strings.Fields(line)
+			totalMem, _ = strconv.ParseUint(fields[1], 10, 64)
+		} else if strings.HasPrefix(line, "MemAvailable:") {
+			fields := strings.Fields(line)
+			availableMem, _ = strconv.ParseUint(fields[1], 10, 64)
+		}
+	}
+
+	if totalMem == 0 {
+		return 0, fmt.Errorf("could not find MemTotal in /proc/meminfo")
+	}
+	if availableMem == 0 {
+	}
+
+	used := totalMem - availableMem
+	usage := (float64(used) / float64(totalMem)) * 100.0
+
+	return usage, nil
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { QRCodeSVG } from 'qrcode.react';
 import { CPUChart } from "@/components/CPUChart";
 import { MemoryChart } from "@/components/MemoryChart";
+import { DiskChart } from "@/components/DiskChart";
 
 export default function Home() {
 	const [totpCode, setTotpCode] = useState('');
@@ -58,6 +59,7 @@ export default function Home() {
 				<VStack>
 					<CPUChart />
 					<MemoryChart />
+					<DiskChart />
 				</VStack>
 				<FormControl>
 					<FormLabel>Insert TOTP generated code</FormLabel>
