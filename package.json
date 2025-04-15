@@ -5,10 +5,13 @@
 	"type": "module",
 	"scripts": {
 		"dev": "concurrently \"pnpm run start:frontend\" \"pnpm run start:backend\"",
-		"start:frontend": "cd front && pnpm run dev",
+		"start:frontend": "cd front && bun dev",
 		"start:backend": "cd back && go run main.go"
 	},
 	"dependencies": {
 		"concurrently": "^9.1.0"
+	},
+	"devDependencies": {
+		"semantic-release": "^24.2.3"
 	}
 }
