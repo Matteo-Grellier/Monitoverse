@@ -6,9 +6,9 @@ on:
       - dev/*
       - feature/*
       - hotfix/*
+
 jobs:
   semantic-release:
-
     name: Semantic Release
     runs-on: ubuntu-latest
     permissions:
