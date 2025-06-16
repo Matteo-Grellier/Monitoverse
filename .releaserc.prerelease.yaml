@@ -4,6 +4,11 @@ plugins:
   - "@semantic-release/changelog"
   - "@semantic-release/github"
 
+release:
+  branches:
+    - main
+    - dev/*
+
 branches:
   - main
   - name: dev/*
