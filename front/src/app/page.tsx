@@ -59,7 +59,6 @@ export default function Home() {
 				<VStack>
 					<CPUChart />
 					<MemoryChart />
-					<DiskChart />
 				</VStack>
 				<FormControl>
 					<FormLabel>Insert TOTP generated code</FormLabel>
