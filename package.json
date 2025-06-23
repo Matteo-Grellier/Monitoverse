@@ -9,16 +9,21 @@
 				"name": "main"
 			},
 			{
-				"name": "beta", "prerelease": true, "channel": "beta"
+				"name": "beta",
+				"prerelease": true,
+				"channel": "beta"
 			},
 			{
-				"name": "dev/*", "channel": "dev"
+				"name": "dev/*",
+				"channel": "dev"
 			},
 			{
-				"name": "feature/*", "channel": "feature"
+				"name": "feature/*",
+				"channel": "feature"
 			},
 			{
-				"name": "hotfix/*", "channel": "hotfix"
+				"name": "hotfix/*",
+				"channel": "hotfix"
 			}
 		],
 		"plugins": [
@@ -31,12 +36,16 @@
 	"scripts": {
 		"dev": "concurrently \"pnpm run start:frontend\" \"pnpm run start:backend\"",
 		"start:frontend": "cd front && bun dev",
-		"start:backend": "cd back && go run main.go"
+		"start:backend": "cd back && go run main.go",
+		"format:front": "cd front && bun format",
+		"lint:front": "cd front && bun lint",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"concurrently": "^9.1.0"
 	},
 	"devDependencies": {
+		"husky": "^9.1.7",
 		"semantic-release": "^24.2.3"
 	}
 }
