@@ -18,13 +18,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// Upgrader pour passer HTTP -> WebSocket
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 func RegisterMonitoringRoutes(r *gin.Engine, userService services.UserService) {
 
 	r.GET("/monitoring/cpu", MakeWebSocketHandler(1000*time.Millisecond, func() (any, error) {
@@ -65,7 +58,6 @@ func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFu
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		defer conn.Close()
 
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -230,7 +222,11 @@ func getMemoryUsage() (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			log.Printf("warning: échec de la fermeture du fichier : %v", cerr)
+		}
+	}()
 
 	var totalMem, availableMem uint64
 	scanner := bufio.NewScanner(file)
@@ -249,8 +245,6 @@ func getMemoryUsage() (float64, error) {
 
 	if totalMem == 0 {
 		return 0, fmt.Errorf("could not find MemTotal in /proc/meminfo")
-	}
-	if availableMem == 0 {
 	}
 
 	used := totalMem - availableMem
