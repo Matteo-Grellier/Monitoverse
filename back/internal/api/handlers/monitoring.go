@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"back/internal/services"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/lanayr/goServer/main/internal/services"
 	"golang.org/x/sys/unix"
 )
 

@@ -1,0 +1,13 @@
+FROM oven/bun:latest
+
+WORKDIR /app
+
+ENV PATH /app/node_modules/.bin:$PATH
+
+COPY package.json ./
+COPY bun.lock ./
+RUN bun install
+
+COPY . ./
+
+CMD ["bun", "dev"]

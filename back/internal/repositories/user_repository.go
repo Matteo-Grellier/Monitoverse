@@ -1,7 +1,8 @@
 package repositories
 
 import (
-	"github.com/lanayr/goServer/main/internal/domain"
+	models "back/internal/domain"
+
 	"gorm.io/gorm"
 )
 

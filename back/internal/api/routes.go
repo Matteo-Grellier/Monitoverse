@@ -1,9 +1,10 @@
 package routes
 
 import (
+	"back/internal/api/handlers"
+	"back/internal/services"
+
 	"github.com/gin-gonic/gin"
-	"github.com/lanayr/goServer/main/internal/services"
-	"github.com/lanayr/goServer/main/internal/api/handlers"
 )
 
 func SetupRoutes(router *gin.Engine, userService services.UserService) {

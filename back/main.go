@@ -3,12 +3,15 @@ package main
 import (
 	"log"
 
+	"back/internal/services"
+
+	"back/internal/repositories"
+	"back/models"
+
+	database "back/database"
+	routes "back/internal/api"
+
 	"github.com/gin-contrib/cors"
-	database "github.com/lanayr/goServer/main/Database"
-	routes "github.com/lanayr/goServer/main/internal/api"
-	"github.com/lanayr/goServer/main/models"
-	"github.com/lanayr/goServer/main/internal/repositories"
-	"github.com/lanayr/goServer/main/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +23,6 @@ func main() {
 		log.Fatal("Failed to connect database: ", err)
 	}
 
-	// Migration des schémas
 	if err := db.AutoMigrate(&models.User{}); err != nil {
 		log.Fatal("Failed to migrate database: ", err)
 	}
@@ -40,5 +42,5 @@ func main() {
 
 	routes.SetupRoutes(router, userService)
 
-	router.Run("localhost:8080")
+	router.Run("localhost:8081")
 }

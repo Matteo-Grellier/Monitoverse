@@ -1,7 +1,8 @@
 package repositories
 
 import (
-	"github.com/lanayr/goServer/main/models"
+	"back/models"
+
 	"gorm.io/gorm"
 )
 

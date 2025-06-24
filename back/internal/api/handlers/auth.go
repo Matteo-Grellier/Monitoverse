@@ -1,8 +1,9 @@
 package handlers
 
 import (
+	"back/internal/services"
+
 	"github.com/gin-gonic/gin"
-	"github.com/lanayr/goServer/main/internal/services"
 )
 
 func RegisterAuthRoutes(r *gin.Engine, userService services.UserService) {
