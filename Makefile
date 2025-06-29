@@ -13,7 +13,7 @@ PROD_FILE = -f docker-compose.yaml
 
 .PHONY: dev
 dev:                              ## Lancer les services en mode dev (hot-reload)
-	$(COMPOSE) $(DEV_FILES) up
+	$(COMPOSE) $(DEV_FILES) up --build --force-recreate -d
 
 .PHONY: up
 up:                               ## Lancer les services en prod (build si besoin)

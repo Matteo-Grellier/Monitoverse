@@ -36,7 +36,7 @@
   "scripts": {
     "dev": "concurrently \"pnpm run start:frontend\" \"pnpm run start:backend\"",
     "start:frontend": "cd front && bun dev",
-    "start:backend": "cd back && go run main.go",
+    "start:backend": "cd back && air",
     "format:front": "cd front && bun format",
     "lint:front": "cd front && bun lint",
     "prepare": "husky"

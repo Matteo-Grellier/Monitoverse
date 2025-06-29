@@ -25,3 +25,5 @@ go.work.sum
 .env
 dev.env
 prod.env
+dockerfile.dev
+.air.toml
