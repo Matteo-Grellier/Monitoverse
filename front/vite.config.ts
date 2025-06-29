@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => ({
 		},
 	},
 	server: {
+		watch: {
+			usePolling: true,
+		},
 		host: true,
 	},
 	build: {

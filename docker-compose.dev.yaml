@@ -1,0 +1,48 @@
+services:
+    db:
+        image: postgres:16.9-alpine
+        container_name: db
+        restart: always
+        shm_size: 128mb
+        environment:
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_DB: ${DB_NAME}
+        ports:
+            - ${DB_PORT}:5432
+    back:
+        image: "back"
+        restart: always
+        depends_on:
+            - db
+        container_name: back
+        volumes:
+            - ./back:/app
+        build:
+            context: ./back
+            dockerfile: dockerfile
+        command: go run main.go
+    front:
+        image: "front"
+        container_name: front
+        build:
+            context: ./front
+            dockerfile: dockerfile
+        volumes:
+            - ./front:/app
+        ports:
+            - 5173:5173
+        command: bun run dev
+    adminer:
+        image: adminer:latest
+        container_name: adminer
+        depends_on:
+            - db
+        restart: always
+        ports:
+            - 8080:8080
+        environment:
+            ADMINER_DEFAULT_SERVER: db
+            ADMINER_DEFAULT_DB: ${DB_NAME}
+            ADMINER_USER: ${DB_USER}
+            ADMINER_PASSWORD: ${DB_PASSWORD}

@@ -1,2 +1,4 @@
 node_modules
 .env
+Makefile
+docker-compose.dev.yaml
