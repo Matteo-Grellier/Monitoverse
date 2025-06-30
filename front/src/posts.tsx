@@ -1,35 +1,13 @@
-import {
-	List,
-	DataTable,
-	ReferenceField,
-	EditButton,
-	Edit,
-	ReferenceInput,
-	SimpleForm,
-	TextInput,
-} from "react-admin";
+import React from "react";
+import { List, Datagrid, TextField, DateField } from "react-admin";
 
 export const PostList = () => (
 	<List>
-		<DataTable rowClick={false}>
-			<DataTable.Col source="id" />
-			<DataTable.Col source="userId">
-				<ReferenceField source="userId" reference="users" link="show" />
-			</DataTable.Col>
-			<DataTable.Col source="title" />
-			<DataTable.Col>
-				<EditButton />
-			</DataTable.Col>
-		</DataTable>
+		<Datagrid>
+			<TextField source="id" />
+			<TextField source="title" />
+			<TextField source="body" />
+			<DateField source="createdAt" />
+		</Datagrid>
 	</List>
-);
-export const PostEdit = () => (
-	<Edit>
-		<SimpleForm>
-			<ReferenceInput source="userId" reference="users" />
-			<TextInput source="id" InputProps={{ disabled: true }} />
-			<TextInput source="title" />
-			<TextInput source="body" multiline rows={5} />
-		</SimpleForm>
-	</Edit>
 );
