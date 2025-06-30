@@ -9,7 +9,7 @@ import (
 
 func SetupRoutes(router *gin.Engine, userService services.UserService) {
 
-	handlers.RegisterTOTPRoutes(router)
+	handlers.RegisterTOTPRoutes(router, userService)
 
 	handlers.RegisterMonitoringRoutes(router, userService)
 
