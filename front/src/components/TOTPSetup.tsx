@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
 	Box,
 	Button,
@@ -30,13 +30,7 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
 	const [error, setError] = useState<string>("");
 	const [success, setSuccess] = useState<string>("");
 
-	useEffect(() => {
-		if (open && user?.email) {
-			generateTOTP();
-		}
-	}, [open, user?.email]);
-
-	const generateTOTP = async () => {
+	const generateTOTP = useCallback(async () => {
 		if (!user?.email) return;
 
 		setIsGenerating(true);
@@ -67,7 +61,13 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
 		} finally {
 			setIsGenerating(false);
 		}
-	};
+	}, [user?.email]);
+
+	useEffect(() => {
+		if (open && user?.email) {
+			generateTOTP();
+		}
+	}, [open, user?.email, generateTOTP]);
 
 	const verifyTOTP = async () => {
 		if (!user?.email || !verificationCode) return;
