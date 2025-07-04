@@ -11,7 +11,7 @@ type User struct {
 	ID        string `gorm:"primaryKey"`
 	Email     string `gorm:"size:255;not null;unique"`
 	Password  string `gorm:"size:255;not null"`
-	Totp      string
+	Totp      string `gorm:"unique"`
 	TotpEmail string
 	CreatedAt time.Time
 	UpdatedAt time.Time
