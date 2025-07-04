@@ -16,6 +16,9 @@ func (m *mockUserRepo) FindByID(id uint) (*models.User, error) {
 func (m *mockUserRepo) FindAll() ([]models.User, error) { return []models.User{}, nil }
 func (m *mockUserRepo) Update(user *models.User) error  { return nil }
 func (m *mockUserRepo) Delete(user *models.User) error  { return nil }
+func (m *mockUserRepo) FindByEmail(email string) (*models.User, error) {
+	return &models.User{ID: "1", Email: email}, nil
+}
 
 func TestCreateUser(t *testing.T) {
 	repo := &mockUserRepo{}

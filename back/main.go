@@ -10,6 +10,7 @@ import (
 
 	database "back/database"
 	routes "back/internal/api"
+	handlers "back/internal/api/handlers"
 
 	"github.com/gin-contrib/cors"
 
@@ -17,6 +18,7 @@ import (
 )
 
 func main() {
+	handlers.StartMonitoringBackground()
 
 	db, err := database.NewDB()
 	if err != nil {
