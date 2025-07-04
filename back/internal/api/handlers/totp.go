@@ -5,11 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
-
-var test *otp.Key
 
 type KeyRequestBody struct {
 	Key string `json:"key" binding:"required"`
