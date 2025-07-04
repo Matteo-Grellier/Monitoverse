@@ -18,12 +18,46 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// MonitoringData holds a snapshot of all metrics at a point in time
+type MonitoringData struct {
+	ID        int64   `json:"id"`
+	Timestamp int64   `json:"timestamp"`
+	CPU       float64 `json:"cpu"`
+	Memory    float64 `json:"memory"`
+	DiskRoot  float64 `json:"disk_root"`
+	DiskHome  float64 `json:"disk_home"`
+}
+
+var monitoringHistory []MonitoringData
+var monitoringID int64 = 1
+
 func RegisterMonitoringRoutes(r *gin.Engine, userService services.UserService) {
+
+	r.GET("/monitoring/history", func(c *gin.Context) {
+		c.JSON(200, monitoringHistory)
+	})
 
 	r.GET("/monitoring/cpu", MakeWebSocketHandler(1000*time.Millisecond, func() (any, error) {
 		cpuUsage, err := getCPUUsage()
 		if err != nil {
 			return nil, err
+		}
+		// Also poll memory and disk for a full snapshot
+		memoryUsage, _ := getMemoryUsage()
+		diskUsage, _ := getDiskUsage()
+		now := time.Now().Unix()
+		data := MonitoringData{
+			ID:        monitoringID,
+			Timestamp: now,
+			CPU:       cpuUsage,
+			Memory:    memoryUsage,
+			DiskRoot:  diskUsage["/"],
+			DiskHome:  diskUsage["/home"],
+		}
+		monitoringID++
+		monitoringHistory = append(monitoringHistory, data)
+		if len(monitoringHistory) > 1000 {
+			monitoringHistory = monitoringHistory[len(monitoringHistory)-1000:]
 		}
 		return cpuUsage, nil
 	}))
@@ -251,4 +285,35 @@ func getMemoryUsage() (float64, error) {
 	usage := (float64(used) / float64(totalMem)) * 100.0
 
 	return usage, nil
+}
+
+// StartMonitoringBackground launches a goroutine that collects monitoring data every second
+func StartMonitoringBackground() {
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+		for {
+			<-ticker.C
+			cpuUsage, err := getCPUUsage()
+			if err != nil {
+				continue
+			}
+			memoryUsage, _ := getMemoryUsage()
+			diskUsage, _ := getDiskUsage()
+			now := time.Now().Unix()
+			data := MonitoringData{
+				ID:        monitoringID,
+				Timestamp: now,
+				CPU:       cpuUsage,
+				Memory:    memoryUsage,
+				DiskRoot:  diskUsage["/"],
+				DiskHome:  diskUsage["/home"],
+			}
+			monitoringID++
+			monitoringHistory = append(monitoringHistory, data)
+			if len(monitoringHistory) > 1000 {
+				monitoringHistory = monitoringHistory[len(monitoringHistory)-1000:]
+			}
+		}
+	}()
 }

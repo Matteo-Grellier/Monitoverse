@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Admin, Resource } from "react-admin";
 import { Layout } from "./Layout";
-import { dataProvider } from "./dataProvider";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import { AuthPage } from "./components/AuthPage";
 import { UserProfile } from "./components/UserProfile";
@@ -15,6 +14,7 @@ import {
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { MonitoringDashboard } from "./components/MonitoringDashboard";
+import { dataProvider } from "./dataProvider";
 
 const CustomAppBar: React.FC<{
 	onProfile: () => void;

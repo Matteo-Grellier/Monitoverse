@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { List, Datagrid, TextField, DateField } from "react-admin";
 import {
 	LineChart,
 	Line,
@@ -11,9 +10,7 @@ import {
 	ResponsiveContainer,
 } from "recharts";
 
-const WS_BASE =
-	(window.location.protocol === "https:" ? "wss://" : "ws://") +
-	window.location.host;
+const WS_BASE = import.meta.env.VITE_WS_BASE || "ws://localhost:8081";
 
 function useMonitoringWS(endpoint: string) {
 	const [data, setData] = useState<{ timestamp: number; value: number }[]>(
@@ -134,15 +131,6 @@ export const MonitoringDashboard = () => {
 					/>
 				</LineChart>
 			</ResponsiveContainer>
-
-			<List>
-				<Datagrid>
-					<TextField source="id" />
-					<TextField source="metric" />
-					<TextField source="value" />
-					<DateField source="timestamp" />
-				</Datagrid>
-			</List>
 		</div>
 	);
 };
