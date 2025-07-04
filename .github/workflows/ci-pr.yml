@@ -35,6 +35,9 @@ jobs:
           cd back
           go build ./...
 
+      - name: Prepare .env for tests
+        run: cp back/.env.example back/.env
+
       - name: Test
         run: |
           cd back
@@ -62,7 +65,7 @@ jobs:
           path: |
             ~/.bun/deps
             ~/.cache/bun
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
 
       - name: Install dependencies
         run: bun install && cd front && bun install
