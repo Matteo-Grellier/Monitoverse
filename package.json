@@ -12,18 +12,6 @@
         "name": "beta",
         "prerelease": true,
         "channel": "beta"
-      },
-      {
-        "name": "dev/*",
-        "channel": "dev"
-      },
-      {
-        "name": "feature/*",
-        "channel": "feature"
-      },
-      {
-        "name": "hotfix/*",
-        "channel": "hotfix"
       }
     ],
     "plugins": [
@@ -39,6 +27,7 @@
     "start:backend": "cd back && air",
     "format:front": "cd front && bun format",
     "lint:front": "cd front && bun lint",
+    "lint:back": "cd back && golangci-lint run",
     "prepare": "husky"
   },
   "dependencies": {
