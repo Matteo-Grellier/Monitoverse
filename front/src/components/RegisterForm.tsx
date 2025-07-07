@@ -10,6 +10,7 @@ import {
 	Link,
 } from "@mui/material";
 import { useAuth } from "./AuthProvider";
+import { TOTPSetup } from "./TOTPSetup";
 
 interface RegisterFormProps {
 	onSwitchToLogin: () => void;
@@ -18,7 +19,16 @@ interface RegisterFormProps {
 export const RegisterForm: React.FC<RegisterFormProps> = ({
 	onSwitchToLogin,
 }) => {
-	const { register, isLoading, error, clearError } = useAuth();
+	const {
+		register,
+		isLoading,
+		error,
+		clearError,
+		totpSetupRequired,
+		setTotpSetupRequired,
+		pendingRegistrationEmail,
+		setPendingRegistrationEmail,
+	} = useAuth();
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -51,6 +61,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 		}
 
 		await register(name, email, password);
+	};
+
+	const handleTOTPSetupClose = () => {
+		setTotpSetupRequired(false);
+		setPendingRegistrationEmail(null);
 	};
 
 	return (
@@ -179,6 +194,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 					</Typography>
 				</Box>
 			</Paper>
+
+			{totpSetupRequired && (
+				<TOTPSetup
+					open={totpSetupRequired}
+					onClose={handleTOTPSetupClose}
+					email={pendingRegistrationEmail}
+				/>
+			)}
 		</Box>
 	);
 };
