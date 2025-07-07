@@ -18,10 +18,15 @@ const API_BASE_URL = "http://localhost:8081";
 interface TOTPSetupProps {
 	open: boolean;
 	onClose: () => void;
+	email?: string | null;
 }
 
-export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
-	const { user } = useAuth();
+export const TOTPSetup: React.FC<TOTPSetupProps> = ({
+	open,
+	onClose,
+	email,
+}) => {
+	const { user, setUser } = useAuth();
 	const [qrCode, setQrCode] = useState<string>("");
 	const [secret, setSecret] = useState<string>("");
 	const [verificationCode, setVerificationCode] = useState("");
@@ -30,8 +35,10 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
 	const [error, setError] = useState<string>("");
 	const [success, setSuccess] = useState<string>("");
 
+	const effectiveEmail = email || user?.email;
+
 	const generateTOTP = useCallback(async () => {
-		if (!user?.email) return;
+		if (!effectiveEmail) return;
 
 		setIsGenerating(true);
 		setError("");
@@ -43,7 +50,7 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ email: user.email }),
+				body: JSON.stringify({ email: effectiveEmail }),
 			});
 
 			const data = await response.json();
@@ -61,29 +68,32 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
 		} finally {
 			setIsGenerating(false);
 		}
-	}, [user?.email]);
+	}, [effectiveEmail]);
 
 	useEffect(() => {
-		if (open && user?.email) {
+		if (open && effectiveEmail) {
 			generateTOTP();
 		}
-	}, [open, user?.email, generateTOTP]);
+	}, [open, effectiveEmail, generateTOTP]);
 
 	const verifyTOTP = async () => {
-		if (!user?.email || !verificationCode) return;
+		if (!effectiveEmail || !verificationCode) return;
 
 		setIsVerifying(true);
 		setError("");
 		setSuccess("");
 
 		try {
-			const response = await fetch(`${API_BASE_URL}/totp/verify`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ key: verificationCode }),
-			});
+			const response = await fetch(
+				`${API_BASE_URL}/totp/verify?email=${encodeURIComponent(effectiveEmail)}`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ key: verificationCode }),
+				}
+			);
 
 			const data = await response.json();
 
@@ -95,6 +105,18 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
 				setSuccess("TOTP verification successful!");
 				// Enable TOTP for the user
 				await enableTOTP();
+				// Fetch user info again or update user state
+				const updatedUser = {
+					...user,
+					email: effectiveEmail,
+					totp: true,
+					id: user?.id || "",
+				};
+				setUser(updatedUser);
+				localStorage.setItem("user", JSON.stringify(updatedUser));
+				setTimeout(() => {
+					onClose();
+				}, 1000);
 			} else {
 				setError("Invalid verification code");
 			}
@@ -108,11 +130,11 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({ open, onClose }) => {
 	};
 
 	const enableTOTP = async () => {
-		if (!user?.email) return;
+		if (!effectiveEmail) return;
 
 		try {
 			const response = await fetch(
-				`${API_BASE_URL}/totp/enable?email=${user.email}`,
+				`${API_BASE_URL}/totp/enable?email=${effectiveEmail}`,
 				{
 					method: "POST",
 				}
