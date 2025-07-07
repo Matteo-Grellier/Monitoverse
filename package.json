@@ -3,24 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "release": {
-    "branches": [
-      {
-        "name": "main"
-      },
-      {
-        "name": "beta",
-        "prerelease": true,
-        "channel": "beta"
-      }
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/npm",
-      "@semantic-release/github"
-    ]
-  },
   "scripts": {
     "dev": "concurrently \"pnpm run start:frontend\" \"pnpm run start:backend\"",
     "start:frontend": "cd front && bun dev",
