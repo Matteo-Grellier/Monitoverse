@@ -17,6 +17,6 @@ jobs:
           git config --global user.email "release-bot@example.com"
           git config --global user.name "Release Bot"
       - name: 🚀 Run release-it
-        run: npx release-it --ci
+        run: pnpx release-it --ci
         env:
           GITHUB_TOKEN: ${{ secrets.monitoverse }}
