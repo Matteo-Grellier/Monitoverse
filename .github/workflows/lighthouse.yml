@@ -29,7 +29,7 @@ jobs:
       - name: run Lighthouse
         working-directory: front
         run: |
-          bun global add @lhci/cli@latest
+          bun add -g @lhci/cli@latest
           lhci autorun
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
