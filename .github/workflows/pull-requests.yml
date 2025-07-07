@@ -1,0 +1,13 @@
+name: Pull-Requests
+
+on:
+  pull_request:
+    branches: [main, dev/*, feature/*, hotfix/*]
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci-pr.yml
+    with: {}
+  lighthouse:
+    uses: ./.github/workflows/lighthouse.yml
+    secrets: inherit

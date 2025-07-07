@@ -1,4 +1,4 @@
-name: Build and Push Docker Images
+name: CD
 
 on:
   push:
@@ -36,3 +36,7 @@ jobs:
           file: ./front/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/front:${{ github.sha }}
+  release:
+    uses: ./.github/workflows/release.yml
+    secrets: inherit
+    needs: build-and-push
