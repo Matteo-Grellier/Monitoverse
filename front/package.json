@@ -57,5 +57,6 @@
 	"name": "front",
 	"trustedDependencies": [
 		"@tailwindcss/oxide"
-	]
+	],
+	"version": "0.2.0"
 }
