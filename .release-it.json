@@ -6,7 +6,7 @@
     },
     "@release-it/bumper": {
       "in": "package.json",
-      "out": ["front/package.json", "back/package.json"]
+      "out": ["front/package.json"]
     }
   },
   "git": {
@@ -15,19 +15,14 @@
     "push": true,
     "commitMessage": "chore(release): v${version}",
     "tagName": "v${version}",
-    "requireCleanWorkingDir": true,
+    "requireCleanWorkingDir": false,
     "requireUpstream": true,
-    "files": [
-      "package.json",
-      "front/package.json",
-      "back/package.json",
-      "CHANGELOG.md"
-    ]
+    "files": ["package.json", "front/package.json", "CHANGELOG.md"]
   },
   "github": {
     "release": true
   },
-  "npm": {
+  "pnpm": {
     "publish": false,
     "ignoreVersion": false
   }

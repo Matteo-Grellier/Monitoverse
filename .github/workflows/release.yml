@@ -12,11 +12,37 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install backend dependencies
+        working-directory: back
+        run: go mod tidy
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install frontend dependencies
+        working-directory: front
+        run: bun install --frozen-lockfile
+
       - name: Configure Git user
         run: |
           git config --global user.email "release-bot@example.com"
           git config --global user.name "Release Bot"
+
       - name: 🚀 Run release-it
-        run: npx release-it --ci
+        run: bun run release --ci
         env:
-          GITHUB_TOKEN: ${{ secrets.monitoverse }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

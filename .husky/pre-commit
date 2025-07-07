@@ -1,4 +1,4 @@
-prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
-git update-index --again
+bun prettier:front
 bun lint:front
 bun lint:back
+git update-index --again

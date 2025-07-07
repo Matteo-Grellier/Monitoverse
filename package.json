@@ -1,13 +1,15 @@
 {
   "name": "monitoverse",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.1",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"pnpm run start:frontend\" \"pnpm run start:backend\"",
     "start:frontend": "cd front && bun dev",
     "start:backend": "cd back && air",
     "format:front": "cd front && bun format",
+    "prettier:front": "cd front && bun format",
     "lint:front": "cd front && bun lint",
     "lint:back": "cd back && golangci-lint run",
     "release": "release-it",
@@ -19,6 +21,8 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@release-it/bumper": "^7.0.5",
+    "@release-it/conventional-changelog": "^10.0.1",
     "husky": "^9.1.7",
     "release-it": "^19.0.3"
   }
