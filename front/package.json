@@ -54,5 +54,8 @@
 		"vite": "^6.2.6",
 		"vitest": "^3.2.4"
 	},
-	"name": "front"
+	"name": "front",
+	"trustedDependencies": [
+		"@tailwindcss/oxide"
+	]
 }
