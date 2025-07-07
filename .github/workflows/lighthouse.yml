@@ -1,12 +1,11 @@
-name: Lighthouse CI
+name: Lighthouse
 
 on:
-  pull_request:
-    branches: [main, dev/*, feature/*, hotfix/*]
+  workflow_call:
 
 jobs:
   lighthouse:
-    name: Lighthouse CI
+    name: Lighthouse
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +26,7 @@ jobs:
         run: |
           bun install
           bun run build
-      - name: run Lighthouse CI
+      - name: run Lighthouse
         working-directory: front
         run: |
           bun global add @lhci/cli@latest
