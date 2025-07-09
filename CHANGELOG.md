@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 (2025-07-09)
+
+
+### Bug Fixes
+
+* **release-it:** fix config ([3e993ee](https://github.com/Matteo-Grellier/Monitoverse/commit/3e993ee3185ee7abd297f312dde8f5f7624e2aca))
+
 ## 0.2.1 (2025-07-09)
 
 # [0.2.0](https://github.com/Matteo-Grellier/Monitoverse/compare/9825d9854c460c6da33d369d9946251136aa31d6...0.2.0) (2025-07-07)
