@@ -20,6 +20,7 @@ interface TerminalCommand {
 	error: string;
 	status: number;
 	time: number;
+	useSudo?: boolean;
 }
 
 interface TerminalMessage {
@@ -35,6 +36,7 @@ export const TerminalDashboard = () => {
 		useState<TerminalCommand | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [useSudo, setUseSudo] = useState(false);
 	const wsRef = useRef<WebSocket | null>(null);
 	const outputRef = useRef<HTMLDivElement>(null);
 
@@ -110,6 +112,7 @@ export const TerminalDashboard = () => {
 			error: "",
 			status: 0,
 			time: Date.now(),
+			useSudo,
 		};
 
 		const message: TerminalMessage = {
@@ -164,6 +167,30 @@ export const TerminalDashboard = () => {
 			</Box>
 
 			<Paper sx={{ p: 2, mb: 2 }}>
+				<Box
+					sx={{
+						display: "flex",
+						gap: 2,
+						alignItems: "center",
+						mb: 2,
+					}}
+				>
+					<label
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: 4,
+						}}
+					>
+						<input
+							type="checkbox"
+							checked={useSudo}
+							onChange={e => setUseSudo(e.target.checked)}
+							style={{ marginRight: 4 }}
+						/>
+						Run as sudo
+					</label>
+				</Box>
 				<Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
 					<Typography
 						variant="body2"

@@ -17,12 +17,15 @@ import (
 )
 
 type TerminalCommand struct {
-	ID      string `json:"id"`
-	Command string `json:"command"`
-	Output  string `json:"output"`
-	Error   string `json:"error"`
-	Status  int    `json:"status"`
-	Time    int64  `json:"time"`
+	ID            string `json:"id"`
+	Command       string `json:"command"`
+	Output        string `json:"output"`
+	Error         string `json:"error"`
+	Status        int    `json:"status"`
+	Time          int64  `json:"time"`
+	Target        string `json:"target,omitempty"`        // "host" or "container"
+	ContainerName string `json:"containerName,omitempty"` // for container target
+	UseSudo       bool   `json:"useSudo,omitempty"`
 }
 
 type TerminalMessage struct {
@@ -80,11 +83,42 @@ func handleTerminalWebSocket(c *gin.Context) {
 }
 
 func executeCommand(conn *websocket.Conn, cmd *TerminalCommand) {
-	// Create a mutex to synchronize writes to the WebSocket connection
 	var writeMutex sync.Mutex
 
-	// Create command with shell
-	execCmd := exec.Command("sh", "-c", cmd.Command)
+	var execCmd *exec.Cmd
+
+	// Always run host commands via Docker socket for host access
+	switch cmd.Target {
+	case "host", "":
+		// Use Docker to run a privileged container with host root mounted
+		commandStr := cmd.Command
+		if cmd.UseSudo {
+			commandStr = "sudo " + commandStr
+		}
+		// Use Alpine as the helper container
+		execCmd = exec.Command(
+			"docker", "run", "--rm", "--privileged",
+			"-v", "/:/host", "alpine",
+			"chroot", "/host", "sh", "-c", commandStr,
+		)
+	case "container":
+		if cmd.ContainerName == "" {
+			sendError(conn, cmd, "Container name required for container target")
+			return
+		}
+		containerCmd := cmd.Command
+		if cmd.UseSudo {
+			containerCmd = "sudo " + containerCmd
+		}
+		execCmd = exec.Command("docker", "exec", cmd.ContainerName, "sh", "-c", containerCmd)
+	default:
+		// Fallback: run in container (should not be used)
+		commandStr := cmd.Command
+		if cmd.UseSudo {
+			commandStr = "sudo " + commandStr
+		}
+		execCmd = exec.Command("sh", "-c", commandStr)
+	}
 
 	// Capture stdout and stderr
 	stdout, err := execCmd.StdoutPipe()
@@ -99,24 +133,20 @@ func executeCommand(conn *websocket.Conn, cmd *TerminalCommand) {
 		return
 	}
 
-	// Start the command
 	if err := execCmd.Start(); err != nil {
 		sendError(conn, cmd, fmt.Sprintf("Failed to start command: %v", err))
 		return
 	}
 
-	// Read output in real-time
 	var output strings.Builder
 	var errorOutput strings.Builder
 
-	// Read stdout
 	go func() {
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
 			line := scanner.Text()
 			output.WriteString(line + "\n")
 
-			// Send partial output
 			partialCmd := &TerminalCommand{
 				ID:      cmd.ID,
 				Command: cmd.Command,
@@ -139,7 +169,6 @@ func executeCommand(conn *websocket.Conn, cmd *TerminalCommand) {
 		}
 	}()
 
-	// Read stderr
 	go func() {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
@@ -148,10 +177,8 @@ func executeCommand(conn *websocket.Conn, cmd *TerminalCommand) {
 		}
 	}()
 
-	// Wait for command to complete
 	err = execCmd.Wait()
 
-	// Prepare final result
 	cmd.Output = output.String()
 	cmd.Error = errorOutput.String()
 	cmd.Time = time.Now().Unix()
@@ -165,13 +192,11 @@ func executeCommand(conn *websocket.Conn, cmd *TerminalCommand) {
 		cmd.Status = 0
 	}
 
-	// Add to history
 	terminalHistory = append(terminalHistory, *cmd)
 	if len(terminalHistory) > 100 {
 		terminalHistory = terminalHistory[len(terminalHistory)-100:]
 	}
 
-	// Send final result
 	finalMsg := TerminalMessage{
 		Type:    "result",
 		Command: cmd,

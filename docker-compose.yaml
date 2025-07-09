@@ -21,6 +21,8 @@ services:
     build:
       context: ./back
       dockerfile: dockerfile
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
   front:
     image: "front"
     container_name: front
