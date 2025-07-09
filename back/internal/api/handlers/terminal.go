@@ -83,42 +83,12 @@ func handleTerminalWebSocket(c *gin.Context) {
 }
 
 func executeCommand(conn *websocket.Conn, cmd *TerminalCommand) {
+
+	// Create a mutex to synchronize writes to the WebSocket connection
 	var writeMutex sync.Mutex
 
-	var execCmd *exec.Cmd
-
-	// Always run host commands via Docker socket for host access
-	switch cmd.Target {
-	case "host", "":
-		// Use Docker to run a privileged container with host root mounted
-		commandStr := cmd.Command
-		if cmd.UseSudo {
-			commandStr = "sudo " + commandStr
-		}
-		// Use Alpine as the helper container
-		execCmd = exec.Command(
-			"docker", "run", "--rm", "--privileged",
-			"-v", "/:/host", "alpine",
-			"chroot", "/host", "sh", "-c", commandStr,
-		)
-	case "container":
-		if cmd.ContainerName == "" {
-			sendError(conn, cmd, "Container name required for container target")
-			return
-		}
-		containerCmd := cmd.Command
-		if cmd.UseSudo {
-			containerCmd = "sudo " + containerCmd
-		}
-		execCmd = exec.Command("docker", "exec", cmd.ContainerName, "sh", "-c", containerCmd)
-	default:
-		// Fallback: run in container (should not be used)
-		commandStr := cmd.Command
-		if cmd.UseSudo {
-			commandStr = "sudo " + commandStr
-		}
-		execCmd = exec.Command("sh", "-c", commandStr)
-	}
+	// Create command with shell
+	execCmd := exec.Command("sh", "-c", cmd.Command)
 
 	// Capture stdout and stderr
 	stdout, err := execCmd.StdoutPipe()
