@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { MonitoringDashboard } from "./components/MonitoringDashboard";
+import { TerminalDashboard } from "./components/TerminalDashboard";
 import { dataProvider } from "./dataProvider";
 
 const CustomAppBar: React.FC<{
@@ -59,6 +60,7 @@ const AppContent: React.FC = () => {
 			</Dialog>
 			<Admin dataProvider={dataProvider} layout={Layout}>
 				<Resource name="monitoring" list={MonitoringDashboard} />
+				<Resource name="terminal" list={TerminalDashboard} />
 			</Admin>
 		</>
 	);

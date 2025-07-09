@@ -16,6 +16,8 @@ services:
     depends_on:
       - db
     container_name: back
+    ports:
+      - "8081:8081"
     build:
       context: ./back
       dockerfile: dockerfile
