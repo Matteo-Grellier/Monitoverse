@@ -11,7 +11,7 @@ import {
 	DialogContent,
 	DialogActions,
 } from "@mui/material";
-import { useAuth } from "./AuthProvider";
+import { useAuth, getToken } from "./AuthProvider";
 
 const API_BASE_URL = "http://localhost:8081";
 
@@ -49,6 +49,7 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${getToken()}`,
 				},
 				body: JSON.stringify({ email: effectiveEmail }),
 			});
@@ -90,6 +91,7 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
+						Authorization: `Bearer ${getToken()}`,
 					},
 					body: JSON.stringify({ key: verificationCode }),
 				}
@@ -137,6 +139,9 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({
 				`${API_BASE_URL}/totp/enable?email=${effectiveEmail}`,
 				{
 					method: "POST",
+					headers: {
+						Authorization: `Bearer ${getToken()}`,
+					},
 				}
 			);
 

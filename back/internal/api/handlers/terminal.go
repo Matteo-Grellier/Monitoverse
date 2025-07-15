@@ -10,7 +10,10 @@ import (
 	"sync"
 	"time"
 
+	authutil "back/internal/authutil"
 	"back/internal/services"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -43,6 +46,20 @@ func RegisterTerminalRoutes(r *gin.Engine, userService services.UserService) {
 }
 
 func handleTerminalWebSocket(c *gin.Context) {
+	// Extract token from query
+	tokenString := c.Query("token")
+	if tokenString == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
+		return
+	}
+	token, err := jwt.ParseWithClaims(tokenString, &authutil.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return authutil.GetJWTSecret(), nil
+	})
+	if err != nil || !token.Valid {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
 	var upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}

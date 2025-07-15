@@ -11,7 +11,10 @@ import (
 	"strings"
 	"time"
 
+	authutil "back/internal/authutil"
 	"back/internal/services"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -86,6 +89,20 @@ func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFu
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
 	return func(c *gin.Context) {
+		// Extract token from query
+		tokenString := c.Query("token")
+		if tokenString == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
+			return
+		}
+		token, err := jwt.ParseWithClaims(tokenString, &authutil.Claims{}, func(token *jwt.Token) (interface{}, error) {
+			return authutil.GetJWTSecret(), nil
+		})
+		if err != nil || !token.Valid {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			return
+		}
+
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			log.Println("Erreur d'upgrade:", err)

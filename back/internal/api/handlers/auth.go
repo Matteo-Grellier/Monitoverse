@@ -3,8 +3,12 @@ package handlers
 import (
 	"back/internal/services"
 	"net/http"
+	"time"
+
+	authutil "back/internal/authutil"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -147,15 +151,40 @@ func LoginUserTOTP(c *gin.Context, userService services.UserService) {
 		"email": user.Email,
 		"totp":  true,
 	}
-	c.JSON(http.StatusOK, gin.H{"user": userResponse, "message": "Login successful", "totp_required": false})
+
+	// Generate JWT token
+	expiresAt := time.Now().Add(24 * time.Hour)
+	claims := authutil.Claims{
+		UserID: user.ID,
+		Email:  user.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(authutil.GetJWTSecret())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": userResponse, "message": "Login successful", "totp_required": false, "token": tokenString})
 }
 
 func LogoutUser(c *gin.Context) {
-	// In a real application, you would invalidate the session/token here
-	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
+	// JWT is stateless; client should delete token
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successful. Please remove the token on the client."})
 }
 
 func GetCurrentUser(c *gin.Context) {
-	// In a real application, you would get the user from the session/token
-	c.JSON(http.StatusOK, gin.H{"message": "Current user endpoint"})
+	userID, _ := c.Get("user_id")
+	userEmail, _ := c.Get("user_email")
+	if userID == nil || userEmail == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"id":    userID,
+		"email": userEmail,
+	})
 }
