@@ -9,6 +9,7 @@ import {
 	Legend,
 	ResponsiveContainer,
 } from "recharts";
+import { getToken } from "./AuthProvider";
 
 const WS_BASE = import.meta.env.VITE_WS_BASE || "ws://localhost:8081";
 
@@ -17,7 +18,10 @@ function useMonitoringWS(endpoint: string) {
 	const wsRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
-		const ws = new WebSocket(`${WS_BASE}${endpoint}`);
+		const token = getToken();
+		const ws = new WebSocket(
+			`${WS_BASE}${endpoint}${token ? `?token=${token}` : ""}`
+		);
 		wsRef.current = ws;
 		ws.onmessage = event => {
 			const value = JSON.parse(event.data);
@@ -49,7 +53,10 @@ export const MonitoringDashboard = () => {
 		{ index: number; root: number; home: number }[]
 	>([]);
 	useEffect(() => {
-		const ws = new WebSocket(`${WS_BASE}/monitoring/disk`);
+		const token = getToken();
+		const ws = new WebSocket(
+			`${WS_BASE}/monitoring/disk${token ? `?token=${token}` : ""}`
+		);
 		ws.onmessage = event => {
 			const value = JSON.parse(event.data);
 			setDiskData(prev => {

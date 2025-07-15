@@ -10,6 +10,7 @@ import {
 	Chip,
 } from "@mui/material";
 import { PlayArrow, Clear, History } from "@mui/icons-material";
+import { getToken } from "./AuthProvider";
 
 const WS_BASE = import.meta.env.VITE_WS_BASE || "ws://localhost:8081";
 
@@ -41,7 +42,10 @@ export const TerminalDashboard = () => {
 	const outputRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		const ws = new WebSocket(`${WS_BASE}/terminal`);
+		const token = getToken();
+		const ws = new WebSocket(
+			`${WS_BASE}/terminal${token ? `?token=${token}` : ""}`
+		);
 		wsRef.current = ws;
 
 		ws.onopen = () => {
