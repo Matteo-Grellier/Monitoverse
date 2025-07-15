@@ -57,6 +57,8 @@ interface AuthProviderProps {
 
 const API_BASE_URL = "http://localhost:8081";
 
+export const getToken = () => localStorage.getItem("token");
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const [user, setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
@@ -139,6 +141,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			}
 			setUser(data.user);
 			localStorage.setItem("user", JSON.stringify(data.user));
+			localStorage.setItem("token", data.token);
 			setTotpRequired(false);
 			setPendingLogin(null);
 			return true;
@@ -189,6 +192,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const logout = () => {
 		setUser(null);
 		localStorage.removeItem("user");
+		localStorage.removeItem("token");
 	};
 
 	const value: AuthContextType = {
