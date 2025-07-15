@@ -21,6 +21,8 @@ services:
     build:
       context: ./back
       dockerfile: dockerfile
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
   front:

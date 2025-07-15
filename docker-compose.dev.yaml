@@ -25,6 +25,8 @@ services:
             context: ./back
             dockerfile: dockerfile.dev
         command: air
+        environment:
+            - JWT_SECRET=${JWT_SECRET}
     front:
         image: "front"
         container_name: front
