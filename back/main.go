@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"back/internal/services"
 
@@ -32,10 +33,24 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepo)
 
+	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if frontendOrigin == "" {
+		frontendOrigin = "*" // Development only
+	}
+
+	// Security headers middleware
+	securityHeaders := func(c *gin.Context) {
+		c.Header("X-Frame-Options", "DENY")
+		c.Header("X-Content-Type-Options", "nosniff")
+		c.Header("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+		c.Next()
+	}
+
 	router := gin.Default()
+	router.Use(securityHeaders)
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Indiquez les domaines autorisés
+		AllowOrigins:     []string{frontendOrigin},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

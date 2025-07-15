@@ -7,6 +7,8 @@ import (
 
 	authutil "back/internal/authutil"
 
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pquerna/otp/totp"
@@ -30,6 +32,10 @@ type LoginTOTPRequest struct {
 	TOTP     string `json:"totp" binding:"required"`
 }
 
+func isProduction() bool {
+	return os.Getenv("ENV") == "production"
+}
+
 func RegisterAuthRoutes(r *gin.Engine, userService services.UserService) {
 	auth := r.Group("/auth")
 	{
@@ -44,21 +50,33 @@ func RegisterAuthRoutes(r *gin.Engine, userService services.UserService) {
 func CreateUser(c *gin.Context, userService services.UserService) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data", "details": err.Error()})
+		if isProduction() {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data", "details": err.Error()})
+		}
 		return
 	}
 
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		if isProduction() {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		}
 		return
 	}
 
 	// Create user with hashed password
 	user, err := userService.CreateUser(req.Name, req.Email, string(hashedPassword))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if isProduction() {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Registration failed"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
 		return
 	}
 
