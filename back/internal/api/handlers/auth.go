@@ -7,8 +7,6 @@ import (
 
 	authutil "back/internal/authutil"
 
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pquerna/otp/totp"
@@ -30,10 +28,6 @@ type LoginTOTPRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 	TOTP     string `json:"totp" binding:"required"`
-}
-
-func isProduction() bool {
-	return os.Getenv("ENV") == "production"
 }
 
 func RegisterAuthRoutes(r *gin.Engine, userService services.UserService) {
@@ -102,15 +96,8 @@ func LoginUser(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Get user by email
-	user, err := userService.GetUserByEmail(req.Email)
+	user, err := AuthenticateUser(userService, req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	// Check password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
@@ -134,15 +121,8 @@ func LoginUserTOTP(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Get user by email
-	user, err := userService.GetUserByEmail(req.Email)
+	user, err := AuthenticateUser(userService, req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	// Check password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
