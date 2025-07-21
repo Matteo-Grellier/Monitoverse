@@ -2,7 +2,7 @@ name: Pull-Requests
 
 on:
   pull_request:
-    branches: [main, dev/*, feature/*, hotfix/*]
+    branches: [main, dev/*, feature/*, hotfix/*, refactor/*]
 
 jobs:
   ci:
