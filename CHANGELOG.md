@@ -1,5 +1,12 @@
 # Changelog
 
+# 0.3.0 (2025-07-22)
+
+
+### Features
+
+* **terminal:** add terminal dashboard ([#10](https://github.com/Matteo-Grellier/Monitoverse/issues/10)) ([b56a754](https://github.com/Matteo-Grellier/Monitoverse/commit/b56a754bba226b97386151f22d2f1b04bc1d65c8))
+
 ## 0.2.2 (2025-07-09)
 
 
