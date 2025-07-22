@@ -228,7 +228,7 @@ export const TerminalDashboard = () => {
 						<Clear />
 					</IconButton>
 				</Box>
-			</Paper >
+			</Paper>
 
 			<Paper
 				sx={{
@@ -397,6 +397,6 @@ export const TerminalDashboard = () => {
 					)}
 				</Box>
 			</Paper>
-		</Box >
+		</Box>
 	);
 };

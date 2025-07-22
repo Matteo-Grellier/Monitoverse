@@ -100,11 +100,6 @@ func handleTerminalWebSocket(c *gin.Context) {
 }
 
 func executeCommand(conn *websocket.Conn, cmd *TerminalCommand) {
-<<<<<<< HEAD
-
-	// Create a mutex to synchronize writes to the WebSocket connection
-=======
->>>>>>> 279e3b7 (fix(terminal): can execute sudo commands on host machine)
 	var writeMutex sync.Mutex
 
 	var execCmd *exec.Cmd
