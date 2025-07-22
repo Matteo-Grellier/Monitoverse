@@ -1,14 +1,32 @@
 import type { ReactNode } from "react";
-import { Layout as RALayout, Menu, MenuItemLink } from "react-admin";
+import {
+	Layout as RALayout,
+	Menu,
+	MenuItemLink,
+	useSidebarState,
+} from "react-admin";
 import { useAuth } from "./components/AuthProvider";
 import { AppBar, Toolbar, Button, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { Monitor, Terminal } from "lucide-react";
 
-const CustomMenu = () => (
-	<Menu>
-		<MenuItemLink to="/monitoring" primaryText="Monitoring Dashboard" />
-	</Menu>
-);
+const CustomMenu = () => {
+	const [open] = useSidebarState();
+	return (
+		<Menu>
+			<MenuItemLink
+				to="/monitoring"
+				primaryText={open ? "Monitoring Dashboard" : ""}
+				leftIcon={<Monitor size={20} />}
+			/>
+			<MenuItemLink
+				to="/terminal"
+				primaryText={open ? "Terminal" : ""}
+				leftIcon={<Terminal size={20} />}
+			/>
+		</Menu>
+	);
+};
 
 export const Layout = ({ children }: { children: ReactNode }) => {
 	const { user, logout } = useAuth();
