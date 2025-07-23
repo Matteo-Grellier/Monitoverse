@@ -10,7 +10,6 @@ module.exports = {
 				"http://localhost:4173/login",
 				"http://localhost:4173/register",
 				"http://localhost:4173/monitoring",
-				"http://localhost:4173/terminal",
 			],
 			startServerCommand: "bun run preview",
 			startServerReadyPattern: "Local:",

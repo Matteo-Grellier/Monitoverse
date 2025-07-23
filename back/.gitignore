@@ -27,5 +27,3 @@ dev.env
 prod.env
 dockerfile.dev
 .air.toml
-
-tmp/*

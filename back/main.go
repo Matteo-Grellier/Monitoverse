@@ -44,7 +44,7 @@ func main() {
 
 	routes.SetupRoutes(router, userService)
 
-	error := router.Run(":8081")
+	error := router.Run("back:8081")
 	if error != nil {
 		log.Fatal("Failed to start server: ", error)
 	}

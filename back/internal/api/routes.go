@@ -13,7 +13,5 @@ func SetupRoutes(router *gin.Engine, userService services.UserService) {
 
 	handlers.RegisterMonitoringRoutes(router, userService)
 
-	handlers.RegisterTerminalRoutes(router, userService)
-
 	handlers.RegisterAuthRoutes(router, userService)
 }
