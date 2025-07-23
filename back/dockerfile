@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY ./ ./
 RUN go mod download
-
+RUN apk add --no-cache sudo docker-cli
 RUN go build -o /back
 
 EXPOSE 8080
