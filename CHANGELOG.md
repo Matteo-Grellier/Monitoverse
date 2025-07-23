@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.2.4 (2025-07-23)
+
 ## [0.2.3](https://github.com/Matteo-Grellier/Monitoverse/compare/v0.2.2...v0.2.3) (2025-07-23)
 
 ## 0.2.2 (2025-07-09)
