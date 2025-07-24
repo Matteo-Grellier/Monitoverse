@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 (2025-07-24)
+
+
+### Bug Fixes
+
+* **releases:** wrong version number ([689872a](https://github.com/Matteo-Grellier/Monitoverse/commit/689872a17a47e801df823edc444c8ae32bb4d451))
+
 ## 0.2.2 (2025-07-09)
 
 
