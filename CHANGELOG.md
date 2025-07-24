@@ -1,14 +1,41 @@
 # Changelog
 
-## 0.2.3 (2025-07-24)
-
+## 0.4.1 (2025-07-24)
 
 ### Bug Fixes
 
 * **releases:** wrong version number ([689872a](https://github.com/Matteo-Grellier/Monitoverse/commit/689872a17a47e801df823edc444c8ae32bb4d451))
 
-## 0.2.2 (2025-07-09)
+## 0.4.0 (2025-07-24)
 
+### Features
+
+* **JWT:** add JWT authentification — user cannot access other pages if he's not logged in ([929f3eb](https://github.com/Matteo-Grellier/Monitoverse/commit/929f3eb2c61957e26942fe0daecb08383a337e43))
+* **cors:** setup cors for production ([21ff6fb](https://github.com/Matteo-Grellier/Monitoverse/commit/21ff6fbff0fdcb55b7614b1202b71d882aa4390d))
+* **readme:** add instructions to the readme ([48fa207](https://github.com/Matteo-Grellier/Monitoverse/commit/48fa207866597b018b7b1212145aa271c9771308))
+
+### Refactors
+
+* **release:** rework docker-compose and .env files ([3e99f66](https://github.com/Matteo-Grellier/Monitoverse/commit/3e99f66aaab531a97e83c9293eff3283144d2202))
+* **auth:** move auth utility functions to handlers package; create `AuthenticateUser` function + resolve DRY problem due to reusing `GetUserByEmail` ([a00c161](https://github.com/Matteo-Grellier/Monitoverse/commit/a00c161a91fbb022b6ba9528bbbcf18456e31f9f))
+
+### Bug Fixes
+
+* **rebase:** fix a forgotten rebase error ([37947e2](https://github.com/Matteo-Grellier/Monitoverse/commit/37947e218f71d2b7915503246b3ea93c7605b5f9))
+
+## 0.3.0 (2025-07-24)
+
+### Features
+
+* **terminal:** add terminal dashboard ([10e5c9d](https://github.com/Matteo-Grellier/Monitoverse/commit/10e5c9d639edd5cb9d101a27b799799ac0ffca86)) ([26d45d0](https://github.com/Matteo-Grellier/Monitoverse/commit/26d45d01962c8d1592c995a6d046eae99e88de9d))
+* **components:** add components for terminal ([60e2c79](https://github.com/Matteo-Grellier/Monitoverse/commit/60e2c79fbb2d7b916f1924d51486d7e34460ed80))
+
+### Bug Fixes
+
+* **terminal:** can execute sudo commands on host machine ([6cb11f9](https://github.com/Matteo-Grellier/Monitoverse/commit/6cb11f94a0c14e015f995dc1976bb4b1d760216f)) ([279e3b7](https://github.com/Matteo-Grellier/Monitoverse/commit/279e3b78023a8983ebd2d3f2d6d4c558dc0443aa))
+* **lighthouse:** add /terminal path ([1a4ffe4](https://github.com/Matteo-Grellier/Monitoverse/commit/1a4ffe4ec5258a6d4a2772922782972b6abe7b23))
+
+## 0.2.2 (2025-07-09)
 
 ### Bug Fixes
 
