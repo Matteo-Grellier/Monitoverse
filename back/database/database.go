@@ -4,16 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func NewDB() (*gorm.DB, error) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		return nil, fmt.Errorf("erreur lors du chargement du fichier .env: %w", err)
-	}
 
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")

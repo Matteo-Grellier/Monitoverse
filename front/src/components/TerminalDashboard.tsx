@@ -12,7 +12,7 @@ import {
 import { PlayArrow, Clear, History } from "@mui/icons-material";
 import { getToken } from "./AuthProvider";
 
-const WS_BASE = import.meta.env.VITE_WS_BASE || "ws://localhost:8081";
+const WS_BASE = "ws://localhost:8081";
 
 interface TerminalCommand {
 	id: string;
