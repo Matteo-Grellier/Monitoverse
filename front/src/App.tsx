@@ -15,7 +15,7 @@ import {
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { MonitoringDashboard } from "./components/MonitoringDashboard";
 import { TerminalDashboard } from "./components/TerminalDashboard";
-import { dataProvider } from "./dataProvider";
+import dataProvider from "./dataProvider";
 
 const CustomAppBar: React.FC<{
 	onProfile: () => void;
