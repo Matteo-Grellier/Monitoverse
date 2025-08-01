@@ -79,8 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		if (savedUser) {
 			try {
 				setUser(JSON.parse(savedUser));
-			} catch (e) {
-				console.error(e);
+			} catch {
 				localStorage.removeItem("user");
 			}
 		}
@@ -110,10 +109,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				setPendingLogin({ email, password });
 				return false;
 			}
-			// Only set user if TOTP is not required (should not happen if TOTP is enforced)
 			return false;
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Login failed");
+		} catch {
+			setError("Login failed");
 			return false;
 		} finally {
 			setIsLoading(false);
@@ -145,8 +143,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			setTotpRequired(false);
 			setPendingLogin(null);
 			return true;
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "TOTP login failed");
+		} catch {
+			setError("TOTP login failed");
 			return false;
 		} finally {
 			setIsLoading(false);
@@ -177,7 +175,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				setTotpSetupRequired(true);
 				setPendingRegistrationEmail(email);
 			}
-			// Do not set user until TOTP is set up
 			return true;
 		} catch (err) {
 			setError(

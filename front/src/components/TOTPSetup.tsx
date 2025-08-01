@@ -62,10 +62,8 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({
 
 			setQrCode(data.qr_code);
 			setSecret(data.secret);
-		} catch (err) {
-			setError(
-				err instanceof Error ? err.message : "Failed to generate TOTP"
-			);
+		} catch {
+			setError("Failed to generate TOTP");
 		} finally {
 			setIsGenerating(false);
 		}
@@ -148,8 +146,7 @@ export const TOTPSetup: React.FC<TOTPSetupProps> = ({
 			if (!response.ok) {
 				throw new Error("Failed to enable TOTP");
 			}
-		} catch (err) {
-			console.error(err);
+		} catch {
 			setError("Failed to enable TOTP");
 		}
 	};

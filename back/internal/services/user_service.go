@@ -23,10 +23,9 @@ func NewUserService(repo repositories.UserRepository) UserService {
 }
 
 func (s *userService) CreateUser(name, email, password string) (*models.User, error) {
-	// Ici on pourrait ajouter de la logique métier, par exemple hashage du mot de passe, validation, etc.
 	user := &models.User{
 		Email:    email,
-		Password: password, // Idéalement, hacher le mot de passe
+		Password: password,
 	}
 	if err := s.repo.Create(user); err != nil {
 		return nil, err
