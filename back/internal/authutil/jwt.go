@@ -15,7 +15,7 @@ type Claims struct {
 func GetJWTSecret() []byte {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		return []byte("default_secret") // Change this in production!
+		return []byte("default_secret")
 	}
 	return []byte(secret)
 }
