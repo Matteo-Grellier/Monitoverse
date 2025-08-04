@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { TerminalDashboard } from "./TerminalDashboard";
 
+// Mock the AuthProvider
+vi.mock("./AuthProvider", () => ({
+	getToken: vi.fn(() => "mock-token"),
+}));
+
 // Mock WebSocket
 const mockWebSocket = {
 	send: vi.fn(),
