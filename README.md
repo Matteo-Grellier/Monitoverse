@@ -78,7 +78,6 @@ go test ./... -v
 
 Cette suite de tests assure une couverture complète de la fonctionnalité Terminal Dashboard, garantissant que l'interface utilisateur et la logique serveur fonctionnent correctement dans tous les scénarios.
 
-
 ## Securité
 
 Les parties du code qui mettent en avant la sécurité sont:
@@ -108,8 +107,6 @@ Les parties du code qui mettent en avant la sécurité sont:
 - **Pas de mot de passe en clair** : Les réponses API ne retournent jamais le mot de passe ou son hash.
 
 - **Logs** : Les logs d'erreur côté serveur n'exposent pas d'informations sensibles en production.
-
-## Unittest
 
 A comprehensive monitoring and terminal management system built with Go backend and React frontend.
 
