@@ -33,9 +33,6 @@ jobs:
           cd back
           go build ./...
 
-      - name: Prepare .env for tests
-        run: cp back/.env.example back/.env
-
       - name: Test
         run: |
           cd back

@@ -52,7 +52,6 @@ func CreateUser(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		if isProduction() {
@@ -63,7 +62,7 @@ func CreateUser(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Create user with hashed password
+
 	user, err := userService.CreateUser(req.Name, req.Email, string(hashedPassword))
 	if err != nil {
 		if isProduction() {
@@ -74,14 +73,12 @@ func CreateUser(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Don't return the password in response
 	userResponse := gin.H{
 		"id":    user.ID,
 		"name":  req.Name,
 		"email": user.Email,
 	}
 
-	// Always require TOTP setup after registration
 	c.JSON(http.StatusCreated, gin.H{
 		"user":                userResponse,
 		"message":             "User created successfully",
@@ -102,7 +99,6 @@ func LoginUser(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Always require TOTP after password check
 	c.JSON(http.StatusOK, gin.H{
 		"user": gin.H{
 			"id":    user.ID,
@@ -127,13 +123,11 @@ func LoginUserTOTP(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Check if TOTP is enabled
 	if user.Totp == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "TOTP is not enabled for this user"})
 		return
 	}
 
-	// Validate the TOTP code
 	valid := false
 	if req.TOTP != "" {
 		valid = totp.Validate(req.TOTP, user.Totp)
@@ -143,15 +137,13 @@ func LoginUserTOTP(c *gin.Context, userService services.UserService) {
 		return
 	}
 
-	// Login successful
 	userResponse := gin.H{
 		"id":    user.ID,
 		"email": user.Email,
 		"totp":  true,
 	}
 
-	// Generate JWT token
-	expiresAt := time.Now().Add(24 * time.Hour)
+	expiresAt := time.Now().Add(15 * time.Minute)
 	claims := authutil.Claims{
 		UserID: user.ID,
 		Email:  user.Email,

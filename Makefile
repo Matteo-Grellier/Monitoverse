@@ -1,34 +1,28 @@
 # Makefile
 
-# ------------------------------------------------
-# Variables
-# ------------------------------------------------
 COMPOSE = docker compose
 DEV_FILES = -f docker-compose.dev.yaml
 PROD_FILE = -f docker-compose.yaml
 
-# ------------------------------------------------
-# Cibles principales
-# ------------------------------------------------
 
 .PHONY: dev
-dev:                              ## Lancer les services en mode dev (hot-reload)
-	$(COMPOSE) $(DEV_FILES) up --build --force-recreate -d
+dev:                              
+	$(COMPOSE) $(DEV_FILES) up --force-recreate -d
 
 .PHONY: up
-up:                               ## Lancer les services en prod (build si besoin)
+up:                               
 	$(COMPOSE) $(PROD_FILE) up --build -d
 
 .PHONY: down
-down:                             ## Arrêter et supprimer les conteneurs + volumes
+down:                             
 	$(COMPOSE) $(DEV_FILES) down -v
 
 .PHONY: logs
-logs:                             ## Afficher les logs en temps réel
+logs:                             
 	$(COMPOSE) $(DEV_FILES) logs -f
 
 .PHONY: build
-build:                            ## Forcer le rebuild des images prod
+build:
 	$(COMPOSE) $(PROD_FILE) up --build --no-start
 
 .PHONY: restart

@@ -45,7 +45,6 @@ func RegisterMonitoringRoutes(r *gin.Engine, userService services.UserService) {
 		if err != nil {
 			return nil, err
 		}
-		// Also poll memory and disk for a full snapshot
 		memoryUsage, _ := getMemoryUsage()
 		diskUsage, _ := getDiskUsage()
 		now := time.Now().Unix()
@@ -89,7 +88,6 @@ func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFu
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
 	return func(c *gin.Context) {
-		// Extract token from query
 		tokenString := c.Query("token")
 		if tokenString == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
@@ -149,14 +147,12 @@ func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFu
 func getDiskUsage() (map[string]float64, error) {
 	usageMap := make(map[string]float64)
 
-	// Calculate usage on "/"
 	rootUsage, err := usageFor("/")
 	if err != nil {
 		return nil, fmt.Errorf("disk usage error for '/': %v", err)
 	}
 	usageMap["/"] = rootUsage
 
-	// Calculate usage on "/home"
 	homeUsage, err := usageFor("/home")
 	if err != nil {
 		return nil, fmt.Errorf("disk usage error for '/home': %v", err)
@@ -166,8 +162,6 @@ func getDiskUsage() (map[string]float64, error) {
 	return usageMap, nil
 }
 
-// usageFor calls unix.Statfs on the provided path, calculates the percentage
-// of used blocks relative to total blocks, and returns it as a float64.
 func usageFor(path string) (float64, error) {
 	var stat unix.Statfs_t
 	if err := unix.Statfs(path, &stat); err != nil {
@@ -195,7 +189,6 @@ type cpuTimes struct {
 	irq     uint64
 	softirq uint64
 	steal   uint64
-	// total = sum of all above
 	total uint64
 }
 
@@ -304,7 +297,6 @@ func getMemoryUsage() (float64, error) {
 	return usage, nil
 }
 
-// StartMonitoringBackground launches a goroutine that collects monitoring data every second
 func StartMonitoringBackground() {
 	go func() {
 		ticker := time.NewTicker(1 * time.Second)
