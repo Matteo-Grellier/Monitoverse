@@ -11,7 +11,7 @@ services:
         ports:
             - ${DB_PORT}:5432
     back:
-        image: "back"
+        image: "monitoverse-back:latest"
         restart: always
         depends_on:
             - db
@@ -21,9 +21,6 @@ services:
         volumes:
             - ./back:/app
             - /var/run/docker.sock:/var/run/docker.sock
-        build:
-            context: ./back
-            dockerfile: dockerfile.dev
         command: air
         environment:
             - JWT_SECRET=${JWT_SECRET}
@@ -33,11 +30,8 @@ services:
             - DB_NAME=${DB_NAME}
             - DB_PORT=${BACK_DB_PORT}
     front:
-        image: "front"
+        image: "monitoverse-front:latest"
         container_name: front
-        build:
-            context: ./front
-            dockerfile: dockerfile
         volumes:
             - ./front:/app
         ports:
