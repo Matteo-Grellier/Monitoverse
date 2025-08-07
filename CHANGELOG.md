@@ -1,8 +1,31 @@
 # Changelog
 
-## 0.4.3 (2025-08-07)
+## 0.7.0 (2025-08-07)
 
-## 0.4.2 (2025-08-04)
+### Features
+
+* **App.tsx:** remove resources from app.tsx ([f959b7d](https://github.com/Matteo-Grellier/Monitoverse/commit/f959b7d6271fa8038398a84f308043333a2bbba5))
+
+### Bug Fixes
+
+* **App.tsx:** add terminal component to app.tsx ([06741eb](https://github.com/Matteo-Grellier/Monitoverse/commit/06741eb73e4864c7d558fb37446d907cc4031ca2))
+
+## 0.6.0 (2025-08-07)
+
+### Features
+
+* **doc:** add docs folder + complete documentation ([806fc30](https://github.com/Matteo-Grellier/Monitoverse/commit/806fc3004dda41f8e29fadb7b0a6509833055d81))
+
+## 0.5.0 (2025-08-04)
+
+### Features
+
+**readme** update README with unittests ([43efc](https://github.com/Matteo-Grellier/Monitoverse/commit/43efc475a73037120b2bfc29f6d225ce42f27347))
+
+### Bug Fixes
+
+* **ci:** remove lines with .env.example because the file does not exist anymore ([2d4d345](https://github.com/Matteo-Grellier/Monitoverse/commit/2d4d345b2f56d6fe9e99aff86f8e7fb8886fcdc1))
+* **unittest:** the mock token was not setup ([3d07cd2](https://github.com/Matteo-Grellier/Monitoverse/commit/3d07cd2087bbc62ac0a301b1baad1568654882f7))
 
 ## 0.4.1 (2025-07-24)
 
