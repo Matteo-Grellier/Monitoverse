@@ -3,23 +3,25 @@
     "@release-it/conventional-changelog": {
       "preset": "angular",
       "infile": "CHANGELOG.md"
+    },
+    "@release-it/bumper": {
+      "out": [
+        "front/package.json"
+      ]
     }
   },
   "git": {
-    "commit": true,
-    "tag": true,
-    "push": true,
     "commitMessage": "chore(release): v${version}",
     "tagName": "v${version}",
-    "requireCleanWorkingDir": false,
+    "requireBranch": "main",
     "requireUpstream": true,
-    "files": ["package.json", "front/package.json", "CHANGELOG.md"]
+    "push": true,
+    "addUntrackedFiles": false
   },
   "github": {
     "release": true
   },
-  "pnpm": {
-    "publish": false,
-    "ignoreVersion": false
+  "npm": {
+    "publish": false
   }
 }
