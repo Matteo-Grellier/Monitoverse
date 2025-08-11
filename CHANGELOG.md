@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.5 (2025-08-11)
+
+
+### Bug Fixes
+
+* **release-it:** rework release-it ([3dad6c3](https://github.com/Matteo-Grellier/Monitoverse/commit/3dad6c334790b172a169ac09f36083612d2910db))
+
 ## 0.7.0 (2025-08-07)
 
 ### Features
