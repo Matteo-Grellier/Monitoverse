@@ -1,8 +1,8 @@
 # Monitoverse
 
-# Bloc 2
+# Bloc 2 - CONCEVOIR ET DEVELOPPER DES APPLICATIONS LOGICIELLES
 
-J'ai séparer la documentation en 2 parties:
+J'ai séparer la documentation en 3 parties:
 - La documentation de la sécurité: [docs/Sécurité.md](docs/Sécurité.md)
 - La documentation des tests unitaires: [docs/unitTests.md](docs/Tests_Unitaires.md)
 - La documentation de la structure du projet: [docs/Structure.md](docs/Structure.md)

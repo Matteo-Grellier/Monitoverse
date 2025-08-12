@@ -101,6 +101,20 @@ func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFu
 			return
 		}
 
+		// Determine effective interval (allow override via query param `interval_ms`)
+		effectiveInterval := interval
+		if msStr := c.Query("interval_ms"); msStr != "" {
+			if ms, err := strconv.Atoi(msStr); err == nil {
+				if ms < 250 {
+					ms = 250
+				}
+				if ms > 60000 {
+					ms = 60000
+				}
+				effectiveInterval = time.Duration(ms) * time.Millisecond
+			}
+		}
+
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			log.Println("Erreur d'upgrade:", err)
@@ -108,7 +122,7 @@ func MakeWebSocketHandler(interval time.Duration, dataFn dataFunc) gin.HandlerFu
 			return
 		}
 
-		ticker := time.NewTicker(interval)
+		ticker := time.NewTicker(effectiveInterval)
 		defer ticker.Stop()
 
 		done := make(chan struct{})
@@ -189,7 +203,7 @@ type cpuTimes struct {
 	irq     uint64
 	softirq uint64
 	steal   uint64
-	total uint64
+	total   uint64
 }
 
 func getCPUUsage() (float64, error) {
